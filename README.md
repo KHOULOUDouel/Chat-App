@@ -44,4 +44,4 @@ Mobile Device: Download and connect the Expo app on your mobile device.
 Android Studio: For Android testing.
 Xcode: For iOS testing.
 Author
-Khouloud Ouelhaz
+Khouloud Ouelhazi
