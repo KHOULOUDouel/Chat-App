@@ -1,18 +1,24 @@
 import React, { useState } from 'react';
 import { ImageBackground, StyleSheet, Text, TextInput, View, TouchableOpacity } from 'react-native';
 
+// Import the background image
 const image = require('../images/Background Image.png'); // Adjust the path to your image file
 
+// Define the colors array for background color options
 const colors = ['#090C08', '#474056', '#8A95A5', '#B9C6AE'];
 
+// Define the Start component
 const Start = ({ navigation }) => {
+  // State variables to store the user's name and selected background color
   const [name, setName] = useState('');
   const [backgroundColor, setBackgroundColor] = useState(colors[0]);
 
+  // Function to handle the button press and navigate to the Chat screen
   const handlePress = () => {
     navigation.navigate('Chat', { name, backgroundColor });
   };
 
+  // Render the Start component
   return (
     <View style={styles.container}>
       <ImageBackground source={image} style={styles.background}>
@@ -47,27 +53,28 @@ const Start = ({ navigation }) => {
   );
 };
 
+// Define the styles for the component
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1, // Take up the full height of the screen
   },
   background: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    flex: 1, // Take up the full height of the screen
+    justifyContent: 'center', // Center the content vertically
+    alignItems: 'center', // Center the content horizontally
   },
   title: {
     fontSize: 45,
     fontWeight: '600',
     color: '#FFFFFF',
-    marginBottom: 50,
+    marginBottom: 50, // Space below the title
   },
   inputContainer: {
     backgroundColor: 'white',
-    borderRadius: 10,
+    borderRadius: 10, // Rounded corners
     padding: 20,
-    width: '80%',
-    alignItems: 'center',
+    width: '80%', // 80% of the screen width
+    alignItems: 'center', // Center the content horizontally
     marginTop: 300, // Adjust this value to move the container down
   },
   input: {
@@ -80,34 +87,34 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '300',
     color: '#757083',
-    marginBottom: 20,
+    marginBottom: 20, // Space below the input field
     backgroundColor: '#FFFFFF',
-    opacity: 0.5,
+    opacity: 0.5, // Slightly transparent
   },
   chooseColorText: {
     fontSize: 16,
     fontWeight: '300',
     color: '#757083',
-    marginBottom: 20,
+    marginBottom: 20, // Space below the text
   },
   colorContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-    width: '100%',
+    flexDirection: 'row', // Align children in a row
+    justifyContent: 'space-between', // Space between the color circles
+    marginBottom: 20, // Space below the color container
+    width: '100%', // Full width of the container
   },
   colorCircle: {
     width: 50,
     height: 50,
-    borderRadius: 25,
+    borderRadius: 25, // Rounded to make it a circle
   },
   button: {
     height: 50,
     width: '100%',
     backgroundColor: '#757083',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 5,
+    alignItems: 'center', // Center the button text horizontally
+    justifyContent: 'center', // Center the button text vertically
+    borderRadius: 5, // Rounded corners
   },
   buttonText: {
     fontSize: 16,
