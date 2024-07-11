@@ -6,7 +6,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
-
+import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 // Import the Start and Chat components
 import Start from './components/Start';
 import Chat from './components/Chat';

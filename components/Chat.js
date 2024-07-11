@@ -32,10 +32,20 @@ const Chat = ({ route, db }) => {
   }, [db]);
 
   // Function to handle sending new messages
-  const onSend = (newMessages = []) => {
-    // Save the new message to Firestore
-    addDoc(collection(db, 'messages'), newMessages[0]);
-  };
+  const onSend = useCallback((newMessages = []) => {
+    const message = newMessages[0];
+    if (message) {
+      // Ensure the message has all required fields before saving
+      if (message.text && message.user && message.createdAt) {
+        // Save the new message to Firestore
+        addDoc(collection(db, 'messages'), message).catch((error) => {
+          console.error("Error adding message: ", error);
+        });
+      } else {
+        console.error("Message is missing required fields: ", message);
+      }
+    }
+  }, [db]);
 
   // Custom rendering function for message bubbles
   const renderBubble = (props) => {
