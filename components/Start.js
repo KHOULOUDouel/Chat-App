@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ImageBackground, StyleSheet, Text, TextInput, View, TouchableOpacity } from 'react-native';
+import { ImageBackground, StyleSheet, Text, TextInput, View, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 
 // Import the background image
 const image = require('../images/Background Image.png'); // Adjust the path to your image file
@@ -20,7 +20,10 @@ const Start = ({ navigation }) => {
 
   // Render the Start component
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
       <ImageBackground source={image} style={styles.background}>
         <Text style={styles.title}>Chat App!</Text>
         <View style={styles.inputContainer}>
@@ -49,7 +52,7 @@ const Start = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </ImageBackground>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
