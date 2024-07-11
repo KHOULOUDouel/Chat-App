@@ -1,42 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Platform, KeyboardAvoidingView, StyleSheet } from 'react-native';
 import { GiftedChat, Bubble } from 'react-native-gifted-chat';
+import { collection, query, orderBy, onSnapshot, addDoc } from 'firebase/firestore';
 
 // Define the Chat component
-const Chat = ({ route }) => {
-  // Extract the name and backgroundColor from the route parameters
-  const { name, backgroundColor } = route.params;
+const Chat = ({ route, db }) => {
+  // Extract the name, backgroundColor, and uid from the route parameters
+  const { name, backgroundColor, uid } = route.params;
 
   // Create the messages state with useState()
   const [messages, setMessages] = useState([]);
 
-  // useEffect hook to set initial messages
+  // useEffect hook to fetch messages from Firestore in real time
   useEffect(() => {
-    setMessages([
-      {
-        _id: 1, // Unique identifier for the system message
-        text: 'You have entered the chat', // System message text
-        createdAt: new Date(), // Timestamp of the system message
-        system: true, // Flag to indicate this is a system message
-      },
-      {
-        _id: 2, // Unique identifier for the user message
-        text: 'Hello developer', // User message text
-        createdAt: new Date(), // Timestamp of the user message
-        user: {
-          _id: 2, // Unique identifier for the user
-          name: 'React Native', // User's name
-          avatar: 'https://placeimg.com/140/140/any', // User's avatar image
-        },
-      },
-    ]);
-  }, []); // Empty dependency array means this runs once after initial render
+    // Create a query that sorts messages by the createdAt property in descending order
+    const q = query(collection(db, 'messages'), orderBy('createdAt', 'desc'));
+
+    // Set up the onSnapshot listener to get real-time updates from Firestore
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const messagesFirestore = snapshot.docs.map((doc) => {
+        const message = doc.data();
+        // Convert Firestore timestamp to JavaScript Date object
+        return { ...message, createdAt: message.createdAt.toDate() };
+      });
+      // Update the messages state with the fetched messages
+      setMessages(messagesFirestore);
+    });
+
+    // Clean up the onSnapshot listener when the component unmounts
+    return () => unsubscribe();
+  }, [db]);
 
   // Function to handle sending new messages
-  const onSend = (newMessages) => {
-    // Append new messages to the existing messages state
-    setMessages(previousMessages => GiftedChat.append(previousMessages, newMessages));
-  };
+  const onSend = useCallback((newMessages = []) => {
+    const message = newMessages[0];
+    if (message) {
+      // Ensure the message has all required fields before saving
+      if (message.text && message.user && message.createdAt) {
+        // Save the new message to Firestore
+        addDoc(collection(db, 'messages'), message).catch((error) => {
+          console.error("Error adding message: ", error);
+        });
+      } else {
+        console.error("Message is missing required fields: ", message);
+      }
+    }
+  }, [db]);
 
   // Custom rendering function for message bubbles
   const renderBubble = (props) => {
@@ -65,7 +74,7 @@ const Chat = ({ route }) => {
         <GiftedChat
           messages={messages} // Feed the GiftedChat component with messages from the messages state
           onSend={messages => onSend(messages)} // Function to handle sending messages
-          user={{ _id: 1, name }} // Current user details
+          user={{ _id: uid, name }} // Current user details with user ID and name
           renderBubble={renderBubble} // Custom bubble rendering function
           accessible={true} // Enable accessibility for the GiftedChat component
           accessibilityLabel="Chat screen" // Accessibility label for screen readers

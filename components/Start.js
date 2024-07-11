@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ImageBackground, StyleSheet, Text, TextInput, View, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { getAuth, signInAnonymously } from 'firebase/auth';
 
 // Import the background image
 const image = require('../images/Background Image.png'); // Adjust the path to your image file
@@ -13,9 +14,23 @@ const Start = ({ navigation }) => {
   const [name, setName] = useState('');
   const [backgroundColor, setBackgroundColor] = useState(colors[0]);
 
+  // Initialize Firebase Authentication
+  const auth = getAuth();
+
   // Function to handle the button press and navigate to the Chat screen
   const handlePress = () => {
-    navigation.navigate('Chat', { name, backgroundColor });
+    signInAnonymously(auth)
+      .then((result) => {
+        const user = result.user;
+        navigation.navigate('Chat', { 
+          uid: user.uid, 
+          name, 
+          backgroundColor 
+        });
+      })
+      .catch((error) => {
+        console.error("Error signing in anonymously:", error);
+      });
   };
 
   // Render the Start component
