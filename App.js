@@ -1,12 +1,14 @@
 
 import 'react-native-gesture-handler';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, disableNetwork, enableNetwork } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
+import { useNetInfo } from '@react-native-community/netinfo';
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+
 // Import the Start and Chat components
 import Start from './components/Start';
 import Chat from './components/Chat';
@@ -29,6 +31,9 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 const App = () => {
+  const [isConnected, setIsConnected] = useState(true);
+  const netInfo = useNetInfo();
+
   useEffect(() => {
     // Sign in anonymously to Firebase
     signInAnonymously(auth)
@@ -40,6 +45,19 @@ const App = () => {
       });
   }, []);
 
+  useEffect(() => {
+    if (netInfo.isConnected) {
+      enableNetwork(db)
+        .then(() => console.log('Network enabled'))
+        .catch(error => console.error('Error enabling network: ', error));
+    } else {
+      disableNetwork(db)
+        .then(() => console.log('Network disabled'))
+        .catch(error => console.error('Error disabling network: ', error));
+    }
+    setIsConnected(netInfo.isConnected);
+  }, [netInfo]);
+
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Start">
@@ -50,7 +68,7 @@ const App = () => {
         />
         <Stack.Screen 
           name="Chat">
-          {(props) => <Chat {...props} db={db} />}
+          {(props) => <Chat {...props} db={db} isConnected={isConnected} />}
         </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
