@@ -1,21 +1,24 @@
 
 import 'react-native-gesture-handler';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, disableNetwork, enableNetwork } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
-import { useNetInfo } from '@react-native-community/netinfo';
+import { getStorage } from 'firebase/storage';
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
+import { ActionSheetProvider } from '@expo/react-native-action-sheet';
+import { useNetInfo } from '@react-native-community/netinfo';
+import { LogBox } from 'react-native'; //ignore warnings in expo
 
-// Import the Start and Chat components
 import Start from './components/Start';
 import Chat from './components/Chat';
 
-// Create an instance of the stack navigator
-const Stack = createStackNavigator();
+// Ignore all log notifications
+LogBox.ignoreAllLogs();
 
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyC0zJEpQ163PZS8LT2FHcWfwtOqztcfLvU",
   authDomain: "chat-app-aa6be.firebaseapp.com",
@@ -29,13 +32,26 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+const storage = getStorage(app); // Initialize storage
+
+// Create a stack navigator
+const Stack = createStackNavigator();
 
 const App = () => {
-  const [isConnected, setIsConnected] = useState(true);
   const netInfo = useNetInfo();
+  const isConnected = netInfo.isConnected;
 
+  // Handle network status changes
   useEffect(() => {
-    // Sign in anonymously to Firebase
+    if (isConnected === false) {
+      disableNetwork(db);
+    } else {
+      enableNetwork(db);
+    }
+  }, [isConnected]);
+
+  // Sign in anonymously to Firebase
+  useEffect(() => {
     signInAnonymously(auth)
       .then(() => {
         console.log("User signed in anonymously");
@@ -45,33 +61,23 @@ const App = () => {
       });
   }, []);
 
-  useEffect(() => {
-    if (netInfo.isConnected) {
-      enableNetwork(db)
-        .then(() => console.log('Network enabled'))
-        .catch(error => console.error('Error enabling network: ', error));
-    } else {
-      disableNetwork(db)
-        .then(() => console.log('Network disabled'))
-        .catch(error => console.error('Error disabling network: ', error));
-    }
-    setIsConnected(netInfo.isConnected);
-  }, [netInfo]);
-
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Start">
-        <Stack.Screen 
-          name="Start" 
-          component={Start} 
-          options={{ title: 'Welcome' }} 
-        />
-        <Stack.Screen 
-          name="Chat">
-          {(props) => <Chat {...props} db={db} isConnected={isConnected} />}
-        </Stack.Screen>
-      </Stack.Navigator>
-    </NavigationContainer>
+    <ActionSheetProvider>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="Start">
+          <Stack.Screen 
+            name="Start" 
+            component={Start} 
+            options={{ title: 'Welcome' }} 
+          />
+          <Stack.Screen 
+            name="Chat">
+            {(props) => <Chat {...props} db={db} storage={storage} isConnected={isConnected} />}
+          </Stack.Screen>
+        </Stack.Navigator>
+      </NavigationContainer>
+    </ActionSheetProvider>
   );
 };
+
 export default App;
